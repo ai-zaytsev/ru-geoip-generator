@@ -66,8 +66,8 @@ jobs:
       # Настраиваем git для коммита
       - name: Configure Git
         run: |
-          git config user.name "ai-zaytsev"
-          git config user.email "ai.zaytsev@yandex.ru"
+          git config --global user.name "ai-zaytsev"
+          git config --global user.email "ai.zaytsev@yandex.ru"
 
       # Коммитим изменения (если есть)
       - name: Commit changes
@@ -80,6 +80,8 @@ jobs:
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          git config --global user.name "ai-zaytsev"
+          git config --global user.email "ai.zaytsev@yandex.ru"
           git remote set-url origin https://ai-zaytsev:${PAT_TOKEN}@github.com/ai-zaytsev/ru-geoip-generator.git
           git push origin master
   
