@@ -63,12 +63,6 @@ jobs:
       - name: Move geoip.dat
         run: cp output/dat/geoip.dat geoip.dat
 
-      # Настраиваем git для коммита
-      - name: Configure Git
-        run: |
-          git config --global user.name "ai-zaytsev"
-          git config --global user.email "ai.zaytsev@yandex.ru"
-
       # Коммитим изменения (если есть)
       - name: Commit changes
         run: |
@@ -76,16 +70,12 @@ jobs:
           git commit -m "Update geoip.dat on $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
 
       # Пушим изменения обратно в репозиторий
-      - name: Push changes
-        env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+      - name: Push changes to master
         run: |
-          git config --global user.name "ai-zaytsev"
-          git config --global user.email "ai.zaytsev@yandex.ru"
-          git remote remove origin
-          git remote add origin https://ai-zaytsev:${PAT_TOKEN}@github.com/ai-zaytsev/ru-geoip-generator.git
-          git branch
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/ai-zaytsev/ru-geoip-generator.git
           git push origin master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
       # Удаляем временные файлы
       - name: Cleanup
