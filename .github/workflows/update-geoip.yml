@@ -68,7 +68,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          release_name: Latest GeoIP Data
+          name: Latest GeoIP Data
           draft: false
           prerelease: false
           files: output/dat/geoip.dat
