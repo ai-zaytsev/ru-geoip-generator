@@ -3,7 +3,7 @@ name: Update geoip.dat
 on:
   # Запуск раз в неделю (например, каждый понедельник в 00:00 UTC)
   schedule:
-    - cron: "0 0 * * 1"
+    - cron: "0 0 * * 4"
 
   # Позволяет вручную запускать workflow из вкладки Actions
   workflow_dispatch:
@@ -63,11 +63,10 @@ jobs:
       - name: Move geoip.dat
         run: cp output/dat/geoip.dat geoip.dat
 
-      # Настраиваем git для коммита
       - name: Configure Git
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
 
       # Коммитим изменения (если есть)
       - name: Commit changes
@@ -76,13 +75,13 @@ jobs:
           git commit -m "Update geoip.dat on $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
 
       # Пушим изменения обратно в репозиторий
-      - name: Push changes
-        if: github.ref == 'refs/heads/master'
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
-
+      - name: Push changes to master
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/ai-zaytsev/ru-geoip-generator.git
+          git push origin master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
       # Удаляем временные файлы
       - name: Cleanup
         run: |
