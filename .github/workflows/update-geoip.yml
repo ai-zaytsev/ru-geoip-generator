@@ -77,12 +77,12 @@ jobs:
 
       # Пушим изменения обратно в репозиторий
       - name: Push changes
-        if: github.ref == 'refs/heads/master'
-        uses: ad-m/github-push-action@v0.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
-
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git remote set-url origin https://$GITHUB_ACTOR:${PAT_TOKEN}@github.com/ai-zaytsev/ru-geoip-generator.git
+          git push origin master
+  
       # Удаляем временные файлы
       - name: Cleanup
         run: |
