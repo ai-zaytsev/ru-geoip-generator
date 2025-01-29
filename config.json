@@ -1,0 +1,18 @@
+{
+  "input": [
+    {
+      "type": "maxmindGeoLite2CountryCSV",
+      "action":"add",
+      "args": {
+        "country": "./geolite2/GeoLite2-Country-Locations-en.csv",
+        "ipv4": "./geolite2/GeoLite2-Country-Blocks-IPv4.csv",
+      }
+    }
+  ],
+  "output": [
+    {
+      "type": "v2rayGeoIPDat",
+      "path": "output/geoip.dat"
+    }
+  ]
+}
