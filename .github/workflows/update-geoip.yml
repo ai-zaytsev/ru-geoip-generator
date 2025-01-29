@@ -82,7 +82,9 @@ jobs:
         run: |
           git config --global user.name "ai-zaytsev"
           git config --global user.email "ai.zaytsev@yandex.ru"
-          git remote set-url origin https://ai-zaytsev:${PAT_TOKEN}@github.com/ai-zaytsev/ru-geoip-generator.git
+          git remote remove origin
+          git remote add origin https://ai-zaytsev:${PAT_TOKEN}@github.com/ai-zaytsev/ru-geoip-generator.git
+          git branch
           git push origin master
   
       # Удаляем временные файлы
