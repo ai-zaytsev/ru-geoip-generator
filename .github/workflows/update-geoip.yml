@@ -62,25 +62,18 @@ jobs:
       # Копируем geoip.dat в корень репозитория для коммита
       - name: Move geoip.dat
         run: cp output/dat/geoip.dat geoip.dat
-
-      - name: Configure Git
-        run: |
-          git config --local user.name "GitHub Actions"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Коммитим изменения (если есть)
-      - name: Commit changes
-        run: |
-          git add geoip.dat
-          git commit -m "Update geoip.dat on $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-
-      # Пушим изменения обратно в репозиторий
-      - name: Push changes to master
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/ai-zaytsev/ru-geoip-generator.git
-          git push origin master
+      
+      # Загружаем файлы
+      - name: Upload geoip.dat to GitHub Releases
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          release_name: Latest GeoIP Data
+          draft: false
+          prerelease: false
+          files: output/dat/geoip.dat
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
   
       # Удаляем временные файлы
       - name: Cleanup
