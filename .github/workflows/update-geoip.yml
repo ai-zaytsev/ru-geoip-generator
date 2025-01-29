@@ -1,0 +1,91 @@
+name: Update geoip.dat
+
+on:
+  # Запуск раз в неделю (например, каждый понедельник в 00:00 UTC)
+  schedule:
+    - cron: "0 0 * * 1"
+
+  # Позволяет вручную запускать workflow из вкладки Actions
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Клонируем текущий репозиторий
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # Устанавливаем Docker
+      # На ubuntu-latest Docker обычно предустановлен, но добавляем шаг на всякий случай
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Скачиваем базу MaxMind, используя секреты
+      - name: Download MaxMind GeoLite2
+        env:
+          MAXMIND_USER: ${{ secrets.MAXMIND_USER }}
+          MAXMIND_PASS: ${{ secrets.MAXMIND_PASS }}
+        run: |
+          wget --user="$MAXMIND_USER" \
+               --password="$MAXMIND_PASS" \
+               "https://download.maxmind.com/geoip/databases/GeoLite2-Country-CSV/download?suffix=zip" \
+               -O GeoLite2-Country-CSV.zip
+
+      # Проверяем успешность скачивания
+      - name: Verify GeoLite2 download
+        run: |
+          if [ ! -s GeoLite2-Country-CSV.zip ]; then
+            echo "Ошибка: Файл GeoLite2-Country-CSV.zip не был скачан или пустой."
+            exit 1
+          fi
+
+      # Сборка Docker-образа
+      - name: Build Docker image
+        run: docker build -t geoip-generator .
+
+      # Запуск Docker-контейнера для генерации geoip.dat
+      - name: Run Docker container
+        run: |
+          mkdir -p output/dat
+          docker run --rm -v ${{ github.workspace }}/output:/geoip/output geoip-generator
+          
+      # Проверяем, что geoip.dat успешно сгенерирован
+      - name: Check geoip.dat existence
+        run: |
+          if [ ! -f output/dat/geoip.dat ]; then
+            echo "Ошибка: Файл geoip.dat не найден."
+            exit 1
+          fi
+
+      # Копируем geoip.dat в корень репозитория для коммита
+      - name: Move geoip.dat
+        run: cp output/dat/geoip.dat geoip.dat
+
+      # Настраиваем git для коммита
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Коммитим изменения (если есть)
+      - name: Commit changes
+        run: |
+          git add geoip.dat
+          git commit -m "Update geoip.dat on $(date +'%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+
+      # Пушим изменения обратно в репозиторий
+      - name: Push changes
+        if: github.ref == 'refs/heads/master'
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
+
+      # Удаляем временные файлы
+      - name: Cleanup
+        run: |
+          rm -f GeoLite2-Country-CSV.zip
+          rm -f geoip.dat
+          rm -rf output
